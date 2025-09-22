@@ -107,19 +107,9 @@ on Linux, `sw_vers` on macOS, and `systeminfo` on Windows, with appropriate fall
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests to `.forgejo/workflows/test.yml`
-5. Submit a pull request
+Issues and pull requests can be submitted via the GitHub mirror at
+<https://github.com/tcpipuk/detect-versions>
 
 ## License
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for details.
-
-## Related Actions
-
-- [Setup Node.js](https://github.com/actions/setup-node) - Set up specific Node.js versions
-- [Runner Info](https://github.com/kenchan0130/actions-system-info) - Additional system information
-- [OS Matrix](https://docs.github.com/en/actions/using-jobs/using-a-matrix-for-your-jobs) - GitHub's
-  built-in matrix strategies
