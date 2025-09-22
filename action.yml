@@ -1,12 +1,8 @@
 name: 'Detect OS and Runtime Versions'
-description: |
-  Detect the actual OS name and version of the runner, plus installed runtime versions.
-  Provides separate outputs for OS details (name, version, slug, architecture) and
-  language runtimes (Node.js, Python, Rust) with semantic versioning components.
-  Works across Linux distributions, macOS, and Windows runners.
+description: 'Detect OS and runtime versions with semantic versioning outputs for GitHub/Forgejo workflows'
 
 branding:
-  icon: 'monitor'
+  icon: 'search'
   color: 'blue'
 
 outputs:
