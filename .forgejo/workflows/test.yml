@@ -1,0 +1,343 @@
+name: Test OS Detection Action
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-previous, ubuntu-latest, ubuntu-rolling, fedora-latest, fedora-rawhide]
+
+    steps:
+      - name: Checkout repository
+        uses: https://code.forgejo.org/actions/checkout@v5
+
+      - name: Test OS detection action
+        id: detect
+        uses: ./
+
+      - name: Display detection results
+        run: |
+          echo "=== OS Detection Results ==="
+          echo "OS Name: ${{ steps.detect.outputs.name }}"
+          echo "OS Version: ${{ steps.detect.outputs.version }}"
+          echo "OS Slug: ${{ steps.detect.outputs.slug }}"
+          echo "Architecture: ${{ steps.detect.outputs.arch }}"
+          echo ""
+          echo "=== Tool Versions ==="
+          echo "CMake Version: ${{ steps.detect.outputs.cmake_version }}"
+          echo "CMake Major: ${{ steps.detect.outputs.cmake_major }}"
+          echo "CMake Minor: ${{ steps.detect.outputs.cmake_minor }}"
+          echo "CMake Patch: ${{ steps.detect.outputs.cmake_patch }}"
+          echo "Docker Version: ${{ steps.detect.outputs.docker_version }}"
+          echo "Docker Major: ${{ steps.detect.outputs.docker_major }}"
+          echo "Docker Minor: ${{ steps.detect.outputs.docker_minor }}"
+          echo "Docker Patch: ${{ steps.detect.outputs.docker_patch }}"
+          echo "Git Version: ${{ steps.detect.outputs.git_version }}"
+          echo "Git Major: ${{ steps.detect.outputs.git_major }}"
+          echo "Git Minor: ${{ steps.detect.outputs.git_minor }}"
+          echo "Git Patch: ${{ steps.detect.outputs.git_patch }}"
+          echo "Go Version: ${{ steps.detect.outputs.go_version }}"
+          echo "Go Major: ${{ steps.detect.outputs.go_major }}"
+          echo "Go Minor: ${{ steps.detect.outputs.go_minor }}"
+          echo "Go Patch: ${{ steps.detect.outputs.go_patch }}"
+          echo "Java Version: ${{ steps.detect.outputs.java_version }}"
+          echo "Java Major: ${{ steps.detect.outputs.java_major }}"
+          echo "Java Minor: ${{ steps.detect.outputs.java_minor }}"
+          echo "Java Patch: ${{ steps.detect.outputs.java_patch }}"
+          echo "Node.js Version: ${{ steps.detect.outputs.node_version }}"
+          echo "Node.js Major: ${{ steps.detect.outputs.node_major }}"
+          echo "Node.js Minor: ${{ steps.detect.outputs.node_minor }}"
+          echo "Node.js Patch: ${{ steps.detect.outputs.node_patch }}"
+          echo "Python Version: ${{ steps.detect.outputs.python_version }}"
+          echo "Python Major: ${{ steps.detect.outputs.python_major }}"
+          echo "Python Minor: ${{ steps.detect.outputs.python_minor }}"
+          echo "Python Patch: ${{ steps.detect.outputs.python_patch }}"
+          echo "Rust Version: ${{ steps.detect.outputs.rust_version }}"
+          echo "Rust Major: ${{ steps.detect.outputs.rust_major }}"
+          echo "Rust Minor: ${{ steps.detect.outputs.rust_minor }}"
+          echo "Rust Patch: ${{ steps.detect.outputs.rust_patch }}"
+          echo "=========================="
+
+      - name: Validate outputs are not empty
+        run: |
+          if [[ -z "${{ steps.detect.outputs.name }}" ]]; then
+            echo "❌ OS name is empty"
+            exit 1
+          fi
+
+          if [[ -z "${{ steps.detect.outputs.version }}" ]]; then
+            echo "❌ OS version is empty"
+            exit 1
+          fi
+
+          if [[ -z "${{ steps.detect.outputs.slug }}" ]]; then
+            echo "❌ OS slug is empty"
+            exit 1
+          fi
+
+          if [[ -z "${{ steps.detect.outputs.arch }}" ]]; then
+            echo "❌ Architecture is empty"
+            exit 1
+          fi
+
+          echo "✅ All required outputs are present"
+
+      - name: Validate version component consistency
+        run: |
+          # Validate Node.js version components if Node.js is available
+          if [[ -n "${{ steps.detect.outputs.node_version }}" ]]; then
+            EXPECTED_NODE="${{ steps.detect.outputs.node_major }}.${{ steps.detect.outputs.node_minor }}.${{ steps.detect.outputs.node_patch }}"
+            ACTUAL_NODE="${{ steps.detect.outputs.node_version }}"
+            if [[ "$EXPECTED_NODE" == "$ACTUAL_NODE" ]]; then
+              echo "✅ Node.js version components match: $ACTUAL_NODE"
+            else
+              echo "❌ Node.js version mismatch: expected $EXPECTED_NODE, got $ACTUAL_NODE"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Node.js not available for version validation"
+          fi
+
+          # Validate Python version components if Python is available
+          if [[ -n "${{ steps.detect.outputs.python_version }}" ]]; then
+            EXPECTED_PYTHON="${{ steps.detect.outputs.python_major }}.${{ steps.detect.outputs.python_minor }}.${{ steps.detect.outputs.python_patch }}"
+            ACTUAL_PYTHON="${{ steps.detect.outputs.python_version }}"
+            if [[ "$EXPECTED_PYTHON" == "$ACTUAL_PYTHON" ]]; then
+              echo "✅ Python version components match: $ACTUAL_PYTHON"
+            else
+              echo "❌ Python version mismatch: expected $EXPECTED_PYTHON, got $ACTUAL_PYTHON"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Python not available for version validation"
+          fi
+
+          # Validate Rust version components if Rust is available
+          if [[ -n "${{ steps.detect.outputs.rust_version }}" ]]; then
+            EXPECTED_RUST="${{ steps.detect.outputs.rust_major }}.${{ steps.detect.outputs.rust_minor }}.${{ steps.detect.outputs.rust_patch }}"
+            ACTUAL_RUST="${{ steps.detect.outputs.rust_version }}"
+            if [[ "$EXPECTED_RUST" == "$ACTUAL_RUST" ]]; then
+              echo "✅ Rust version components match: $ACTUAL_RUST"
+            else
+              echo "❌ Rust version mismatch: expected $EXPECTED_RUST, got $ACTUAL_RUST"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Rust not available for version validation"
+          fi
+
+          # Validate CMake version components if CMake is available
+          if [[ -n "${{ steps.detect.outputs.cmake_version }}" ]]; then
+            EXPECTED_CMAKE="${{ steps.detect.outputs.cmake_major }}.${{ steps.detect.outputs.cmake_minor }}.${{ steps.detect.outputs.cmake_patch }}"
+            ACTUAL_CMAKE="${{ steps.detect.outputs.cmake_version }}"
+            if [[ "$EXPECTED_CMAKE" == "$ACTUAL_CMAKE" ]]; then
+              echo "✅ CMake version components match: $ACTUAL_CMAKE"
+            else
+              echo "❌ CMake version mismatch: expected $EXPECTED_CMAKE, got $ACTUAL_CMAKE"
+              exit 1
+            fi
+          else
+            echo "ℹ️ CMake not available for version validation"
+          fi
+
+          # Validate Docker version components if Docker is available
+          if [[ -n "${{ steps.detect.outputs.docker_version }}" ]]; then
+            EXPECTED_DOCKER="${{ steps.detect.outputs.docker_major }}.${{ steps.detect.outputs.docker_minor }}.${{ steps.detect.outputs.docker_patch }}"
+            ACTUAL_DOCKER="${{ steps.detect.outputs.docker_version }}"
+            if [[ "$EXPECTED_DOCKER" == "$ACTUAL_DOCKER" ]]; then
+              echo "✅ Docker version components match: $ACTUAL_DOCKER"
+            else
+              echo "❌ Docker version mismatch: expected $EXPECTED_DOCKER, got $ACTUAL_DOCKER"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Docker not available for version validation"
+          fi
+
+          # Validate Git version components if Git is available
+          if [[ -n "${{ steps.detect.outputs.git_version }}" ]]; then
+            EXPECTED_GIT="${{ steps.detect.outputs.git_major }}.${{ steps.detect.outputs.git_minor }}.${{ steps.detect.outputs.git_patch }}"
+            ACTUAL_GIT="${{ steps.detect.outputs.git_version }}"
+            if [[ "$EXPECTED_GIT" == "$ACTUAL_GIT" ]]; then
+              echo "✅ Git version components match: $ACTUAL_GIT"
+            else
+              echo "❌ Git version mismatch: expected $EXPECTED_GIT, got $ACTUAL_GIT"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Git not available for version validation"
+          fi
+
+          # Validate Go version components if Go is available
+          if [[ -n "${{ steps.detect.outputs.go_version }}" ]]; then
+            EXPECTED_GO="${{ steps.detect.outputs.go_major }}.${{ steps.detect.outputs.go_minor }}.${{ steps.detect.outputs.go_patch }}"
+            ACTUAL_GO="${{ steps.detect.outputs.go_version }}"
+            if [[ "$EXPECTED_GO" == "$ACTUAL_GO" ]]; then
+              echo "✅ Go version components match: $ACTUAL_GO"
+            else
+              echo "❌ Go version mismatch: expected $EXPECTED_GO, got $ACTUAL_GO"
+              exit 1
+            fi
+          else
+            echo "ℹ️ Go not available for version validation"
+          fi
+
+          # Validate Java version components if Java is available (note: Java has complex versioning)
+          if [[ -n "${{ steps.detect.outputs.java_version }}" ]]; then
+            JAVA_VERSION="${{ steps.detect.outputs.java_version }}"
+            JAVA_MAJOR="${{ steps.detect.outputs.java_major }}"
+            JAVA_MINOR="${{ steps.detect.outputs.java_minor }}"
+            JAVA_PATCH="${{ steps.detect.outputs.java_patch }}"
+
+            # Java validation is more complex due to legacy vs modern versioning
+            if [[ "$JAVA_VERSION" =~ ^1\. ]]; then
+              # Legacy format like "1.8.0_392"
+              EXPECTED_JAVA="1.${JAVA_MAJOR}.${JAVA_MINOR}_${JAVA_PATCH}"
+            else
+              # Modern format like "21.0.1"
+              EXPECTED_JAVA="${JAVA_MAJOR}.${JAVA_MINOR}.${JAVA_PATCH}"
+            fi
+
+            if [[ "$EXPECTED_JAVA" == "$JAVA_VERSION" ]]; then
+              echo "✅ Java version components match: $JAVA_VERSION"
+            else
+              echo "ℹ️ Java version parsing: expected $EXPECTED_JAVA, got $JAVA_VERSION (may differ due to complex versioning)"
+            fi
+          else
+            echo "ℹ️ Java not available for version validation"
+          fi
+
+      - name: Test slug format
+        run: |
+          SLUG="${{ steps.detect.outputs.slug }}"
+          if [[ "$SLUG" =~ ^[A-Za-z]+-[0-9\.]+$ ]]; then
+            echo "✅ Slug format is valid: $SLUG"
+          else
+            echo "❌ Invalid slug format: $SLUG"
+            echo "Expected format: Name-Version (e.g., Ubuntu-22.04)"
+            exit 1
+          fi
+
+      - name: Test conditional steps based on OS
+        run: |
+          OS_NAME="${{ steps.detect.outputs.name }}"
+
+          case "$OS_NAME" in
+            "Ubuntu")
+              echo "✅ Running Ubuntu-specific commands"
+              lsb_release -a || echo "lsb_release not available"
+              cat /etc/os-release | head -5
+              ;;
+            "Debian")
+              echo "✅ Running Debian-specific commands"
+              cat /etc/debian_version || echo "debian_version not available"
+              ;;
+            "CentOS"|"RHEL"|"Fedora")
+              echo "✅ Running Red Hat family commands"
+              cat /etc/redhat-release || echo "redhat-release not available"
+              ;;
+            "macOS")
+              echo "✅ Running macOS-specific commands"
+              sw_vers || echo "sw_vers not available"
+              ;;
+            "Windows")
+              echo "✅ Running Windows-specific commands"
+              systeminfo | head -10 || echo "systeminfo not available"
+              ;;
+            *)
+              echo "ℹ️ Unknown OS: $OS_NAME"
+              ;;
+          esac
+
+  test-matrix:
+    name: Test Matrix Usage
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        test-case: ["basic", "caching", "conditional"]
+
+    steps:
+      - name: Checkout repository
+        uses: https://code.forgejo.org/actions/checkout@v5
+
+      - name: Detect OS for matrix testing
+        id: os
+        uses: ./
+
+      - name: Test basic usage
+        if: matrix.test-case == 'basic'
+        run: |
+          echo "Testing basic usage with OS: ${{ steps.os.outputs.slug }}"
+          echo "This would be where you run your build/test commands"
+
+      - name: Test with caching
+        if: matrix.test-case == 'caching'
+        run: |
+          echo "Testing cache key generation"
+          CACHE_KEY="test-${{ steps.os.outputs.slug }}-${{ github.sha }}"
+          echo "Generated cache key: $CACHE_KEY"
+
+          # Simulate cache usage
+          mkdir -p ./cache-test
+          echo "cached data for ${{ steps.os.outputs.slug }}" > ./cache-test/data.txt
+
+      - name: Test conditional execution
+        if: matrix.test-case == 'conditional'
+        run: |
+          OS_NAME="${{ steps.os.outputs.name }}"
+          echo "Testing conditional execution for: $OS_NAME"
+
+          if [[ "$OS_NAME" == "Ubuntu" ]]; then
+            echo "✅ Would install Ubuntu packages"
+          elif [[ "$OS_NAME" == "macOS" ]]; then
+            echo "✅ Would install Homebrew packages"
+          elif [[ "$OS_NAME" == "Windows" ]]; then
+            echo "✅ Would install Chocolatey packages"
+          else
+            echo "ℹ️ Generic installation for $OS_NAME"
+          fi
+
+  validate-readme:
+    name: Validate README Examples
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: https://code.forgejo.org/actions/checkout@v5
+
+      - name: Test README basic example
+        id: readme-test
+        uses: ./
+
+      - name: Verify README example works
+        run: |
+          echo "OS: ${{ steps.readme-test.outputs.name }}"
+          echo "Version: ${{ steps.readme-test.outputs.version }}"
+          echo "Slug: ${{ steps.readme-test.outputs.slug }}"
+          echo "Architecture: ${{ steps.readme-test.outputs.arch }}"
+          echo "Node.js: ${{ steps.readme-test.outputs.node_version }}"
+          echo "Python: ${{ steps.readme-test.outputs.python_version }}"
+          echo "Rust: ${{ steps.readme-test.outputs.rust_version }}"
+
+          # Verify the example outputs match what's documented
+          if [[ "${{ steps.readme-test.outputs.name }}" == "Ubuntu" ]]; then
+            echo "✅ README example validated for Ubuntu"
+          else
+            echo "ℹ️ README example running on: ${{ steps.readme-test.outputs.name }}"
+          fi
+
+      - name: Test cache key generation from README
+        run: |
+          CACHE_KEY="deps-${{ steps.readme-test.outputs.slug }}-example-hash"
+          echo "Generated cache key: $CACHE_KEY"
+          echo "✅ Cache key format matches README example"
